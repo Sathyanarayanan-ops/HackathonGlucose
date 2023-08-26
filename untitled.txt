@@ -1,0 +1,88 @@
+HGBR
+
+from sklearn.ensemble import HistGradientBoostingRegressor
+
+from sklearn.linear_model import RidgeCV
+
+gbdt_pipeline = make_pipeline(num_linear_processor, 
+                              HistGradientBoostingRegressor(loss='squared_error',
+                                                            max_iter=100,
+                                                            random_state=0))
+gbdt_pipeline
+# fitting the model
+gbdt_pipeline.fit(X_train,y_train)
+print('R^2 value =', gbdt_pipeline.score(X_train,y_train))  #Printing the R^2 value 
+
+# testing the model 
+prediction_test = gbdt_pipeline.predict(X_test)    
+print(y_test)
+print(prediction_test)
+print("Mean square error =", np.mean(prediction_test-y_test)**2)
+
+SGDREGRESSOR
+
+from sklearn.linear_model import SGDRegressor
+
+# Histogram-based Gradient Boosting Regression Tree
+sgd_pipeline = make_pipeline(
+    num_linear_processor, SGDRegressor(loss='squared_error',
+                                       penalty='l2', 
+                                       alpha=0.0001,
+                                       learning_rate = 'adaptive'
+                                      )
+)
+sgd_pipeline  
+
+# fitting the model
+
+sgd_pipeline.fit(X_train,y_train)
+print('R^2 value =', sgd_pipeline.score(X_train, y_train))  #Printing the R^2 value 
+
+# testing the model 
+prediction_test = sgd_pipeline.predict(X_test)    
+print(y_test)
+print(prediction_test) 
+print("Mean square error =", np.mean(prediction_test-y_test)**2)
+
+
+lasso
+
+# grid search
+#alphas = np.logspace(-4, -0.5, 30) # intercept
+
+# tuning alpha
+#tuned_parameters = [{"alpha": alphas}]
+#model_lasso = GridSearchCV(lasso, cv=n_folds, refit=True)
+
+#lasso =lasso.fit(X_train, y_train)
+
+estimator 
+
+from sklearn.ensemble import StackingRegressor
+from sklearn.linear_model import RidgeCV
+
+estimator_1 = [
+    ("Linear Regression", lrg_pipeline),
+    ("Ridge Regression", ridge_pipeline),
+    ("Gradient Boosting", gbdt_pipeline), 
+    ("Lasso Regression", lasso_pipeline),
+    ("Polynomial Regression", poly_pipeline),
+    ("SGDRegressor", sgd_pipeline)
+]
+
+stacking_regressor_1 = StackingRegressor(estimators=estimator_1, final_estimator = RidgeCV())
+stacking_regressor_1 
+
+# fitting the estimators
+stacking_regressor_1.fit(X_train,y_train)
+
+# testing the model 
+prediction_test = stacking_regressor_1.predict(X_test)    
+
+print(y_test)
+print(prediction_test)
+print('R^2 value =', stacking_regressor_1.score(X_train, y_train))  #Printing the R^2 value    
+print("Mean square error =", np.mean(prediction_test-y_test)**2)
+
+# plotting the results
+sns.relplot(data=[y_test, prediction_test], height=10, aspect=1);   
